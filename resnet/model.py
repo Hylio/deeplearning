@@ -2,23 +2,28 @@ import torch.nn as nn
 import torch
 
 
+# 18层和34层的resnet对应的残差结构
 class BasicBlock(nn.Module):
     expansion = 1
+    # expansion == 残差结构的卷积核的变化
 
     def __init__(self, in_channel, out_channel, stride=1, downsample=None, **kwargs):
+        # downsample 对应虚线残差结构 起到降维作用
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=in_channel, out_channels=out_channel, kernel_size=3,
                                stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channel)
         self.relu = nn.ReLU()
-        self.conv2 = nn.Conv2d(in_channels=out_channel, out_channels=out_channel,kernel_size=3,
+        self.conv2 = nn.Conv2d(in_channels=out_channel, out_channels=out_channel, kernel_size=3,
                                stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channel)
         self.downsample = downsample
 
     def forward(self, x):
+        # identity 是x原本参数，在卷积后与结果直接相加
         identity = x
         if self.downsample is not None:
+            # 如果有下采样 说明需要降维
             identity = self.downsample(x)
 
         out = self.conv1(x)
@@ -34,6 +39,8 @@ class BasicBlock(nn.Module):
 
 class Bottleneck(nn.Module):
     expansion = 4
+    # expansion == 残差结构的卷积核的变化
+    # 第三个卷积核的个数是前两个的4倍，所以等于4
 
     def __init__(self, in_chanel, out_channel, stride=1, downsample=None,
                  groups=1, width_per_group=64):
@@ -73,7 +80,8 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-
+    # block 表示使用哪种resnet，18层和34层使用basic，其他的使用bottleneck
+    # include_top 表示需要搭建更复杂的网络
     def __init__(self, block, blocks_num, num_classes=1000, include_top=True, groups=1, width_per_group=64):
         super(ResNet, self).__init__()
         self.include_top = include_top
@@ -81,18 +89,22 @@ class ResNet(nn.Module):
 
         self.groups = groups
         self.width_per_group = width_per_group
-
+        # 对应原论文的conv1 (7*7, 64, stride=2)
+        # in_channel = 3 -> R,G,B
+        # out_channel = 之后网络的in_channel
         self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=7, stride=2,
                                padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(self.in_channel)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        # layer1,2,3,4 分别对应原论文的 conv2,3,4,5
         self.layer1 = self._make_layer(block, 64, blocks_num[0])
         self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2)
         self.layer2 = self._make_layer(block, 256, blocks_num[2], stride=2)
         self.layer2 = self._make_layer(block, 512, blocks_num[3], stride=2)
         if self.include_top:
-            self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+            # 加了一个平均池化下采样
+            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
             self.fc = nn.Linear(512*block.expansion, num_classes)
 
         for m in self.modules():
@@ -100,8 +112,9 @@ class ResNet(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
     def _make_layer(self, block, channel, block_num, stride=1):
+        # block_num 表示这一层有多少残差结构
         downsample = None
-        if stride!=1 or self.in_channel!=channel * block.expansion:
+        if stride!=1 or self.in_channel != channel * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(self.in_channel, channel * block.expansion, kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(channel*block.expansion)
@@ -159,45 +172,3 @@ def resnext101_32x8d(num_classes=1000, include_top=True):
     width_per_group = 4
     return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=num_classes, include_top=include_top,
                   groups=groups, width_per_group=width_per_group)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
