@@ -27,7 +27,7 @@ with open(json_path, "r") as f:
     class_indict = json.load(f)
 
 model = resnet34(num_classes=2).to(device)
-weights_path = "resNet34.pth"
+weights_path = "resNet34_1016.pth"
 assert os.path.exists(weights_path), "file: {} does not exist".format(weights_path)
 model.load_state_dict(torch.load(weights_path, map_location=device))
 

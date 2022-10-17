@@ -42,10 +42,11 @@ def main():
         json_file.write(json_str)
 
     batch_size = 16
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=nw)
 
     validate_dataset = datasets.ImageFolder(root=os.path.join(image_path, "val"), transform=data_transform["val"])
-    validata_loader = torch.utils.data.DataLoader(validate_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    validata_loader = torch.utils.data.DataLoader(validate_dataset, batch_size=batch_size, shuffle=True, num_workers=nw)
     val_num = len(validate_dataset)
     print("using {} images for training and {} images for validation.".format(train_num, val_num))
 
@@ -56,9 +57,9 @@ def main():
 
     optimizer = optim.Adam(params=net.parameters(), lr=0.0001)
 
-    epochs = 20
+    epochs = 5
     best_acc = 0.0
-    save_path = './resNet34.pth'
+    save_path = 'resNet34_1017.pth'
     train_steps = len(train_loader)
     for epoch in range(epochs):
         net.train()
