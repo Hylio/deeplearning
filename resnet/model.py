@@ -100,8 +100,8 @@ class ResNet(nn.Module):
         # layer1,2,3,4 分别对应原论文的 conv2,3,4,5
         self.layer1 = self._make_layer(block, 64, blocks_num[0])
         self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2)
-        self.layer2 = self._make_layer(block, 256, blocks_num[2], stride=2)
-        self.layer2 = self._make_layer(block, 512, blocks_num[3], stride=2)
+        self.layer3 = self._make_layer(block, 256, blocks_num[2], stride=2)
+        self.layer4 = self._make_layer(block, 512, blocks_num[3], stride=2)
         if self.include_top:
             # 加了一个平均池化下采样
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -114,7 +114,7 @@ class ResNet(nn.Module):
     def _make_layer(self, block, channel, block_num, stride=1):
         # block_num 表示这一层有多少残差结构
         downsample = None
-        if stride!=1 or self.in_channel != channel * block.expansion:
+        if stride != 1 or self.in_channel != channel * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(self.in_channel, channel * block.expansion, kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(channel*block.expansion)

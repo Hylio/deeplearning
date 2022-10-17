@@ -17,7 +17,7 @@ def main():
         "train": transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
-            transforms.ToTensor,
+            transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         "val": transforms.Compose([
@@ -49,14 +49,14 @@ def main():
     val_num = len(validate_dataset)
     print("using {} images for training and {} images for validation.".format(train_num, val_num))
 
-    net = resnet34()
+    net = resnet34(num_classes=2)
     net.to(device)
 
     loss_function = nn.CrossEntropyLoss()
 
     optimizer = optim.Adam(params=net.parameters(), lr=0.0001)
 
-    epochs = 3
+    epochs = 20
     best_acc = 0.0
     save_path = './resNet34.pth'
     train_steps = len(train_loader)
@@ -67,8 +67,8 @@ def main():
         for step, data in enumerate(train_bar):
             images, labels = data
             optimizer.zero_grad()
-            logits = net(images.to(device))
-            loss = loss_function(logits, labels.to(device))
+            outputs = net(images.to(device))
+            loss = loss_function(outputs, labels.to(device))
             loss.backward()
             optimizer.step()
 
@@ -77,20 +77,20 @@ def main():
 
         net.eval()
         acc = 0.0
-        with torch.no_gard():
+        with torch.no_grad():
             val_bar = tqdm(validata_loader, file=sys.stdout)
             for val_data in val_bar:
                 val_images, val_labels = val_data
                 outputs = net(val_images.to(device))
                 predict_y = torch.max(outputs, dim=1)[1]
-                acc += torch.eq(predict_y, val_labels.to(device).sum().item())
+                acc += torch.eq(predict_y, val_labels.to(device)).sum().item()
                 val_bar.desc = "valid epoch[{}/{}]".format(epoch+1, epochs)
 
-        val_accrate = acc/val_num
-        print("[epoch %d] train loss: {.3f} val_accuracy: {.3f}".format(epoch+1, running_loss/train_steps, val_accrate))
+        val_accurate = acc/val_num
+        print("[epoch {}] train loss: {:3f} val_accuracy: {:3f}".format(epoch+1, running_loss/train_steps, val_accurate))
 
-        if val_accrate > best_acc:
-            best_acc = val_accrate
+        if val_accurate > best_acc:
+            best_acc = val_accurate
             torch.save(net.state_dict(), save_path)
 
     print("finish training.")
