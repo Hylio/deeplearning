@@ -21,7 +21,7 @@ def main():
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
         ]),
         "val": transforms.Compose([
-            transforms.Resize(224),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
         ])
@@ -56,7 +56,7 @@ def main():
     optimizer = optim.Adam(params=net.parameters(), lr=0.0001)
 
     best_acc = 0
-    epochs = 2
+    epochs = 20
     save_path = "RepVGG.pth"
 
     for epoch in range(epochs):

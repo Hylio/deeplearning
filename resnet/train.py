@@ -62,19 +62,19 @@ def main():
     save_path = 'resNet34_1017.pth'
     train_steps = len(train_loader)
     for epoch in range(epochs):
-        net.train()
-        running_loss = 0.0
-        train_bar = tqdm(train_loader, file=sys.stdout)
-        for step, data in enumerate(train_bar):
-            images, labels = data
-            optimizer.zero_grad()
-            outputs = net(images.to(device))
-            loss = loss_function(outputs, labels.to(device))
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-            train_bar.desc = "tran epoch[{}/{}] loss:{:3f}".format(epoch+1, epochs, loss)
+        # net.train()
+        # running_loss = 0.0
+        # train_bar = tqdm(train_loader, file=sys.stdout)
+        # for step, data in enumerate(train_bar):
+        #     images, labels = data
+        #     optimizer.zero_grad()
+        #     outputs = net(images.to(device))
+        #     loss = loss_function(outputs, labels.to(device))
+        #     loss.backward()
+        #     optimizer.step()
+        #
+        #     running_loss += loss.item()
+        #     train_bar.desc = "tran epoch[{}/{}] loss:{:3f}".format(epoch+1, epochs, loss)
 
         net.eval()
         acc = 0.0
