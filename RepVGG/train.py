@@ -7,6 +7,7 @@ import torch.optim as optim
 from torchvision import transforms, datasets
 from tqdm import tqdm
 from model import RepVGG
+from torch.utils.tensorboard import SummaryWriter
 
 
 def main():
@@ -56,8 +57,10 @@ def main():
     optimizer = optim.Adam(params=net.parameters(), lr=0.0001)
 
     best_acc = 0
-    epochs = 20
+    epochs = 50
     save_path = "RepVGG.pth"
+
+    writer = SummaryWriter()
 
     for epoch in range(epochs):
         net.train()
@@ -65,6 +68,7 @@ def main():
         train_bar = tqdm(train_loader, file=sys.stdout)
         for step, data in enumerate(train_bar):
             images, labels = data
+            # writer.add_graph(net, images.to(device))
             optimizer.zero_grad()
             outputs = net(images.to(device))
             loss = loss_function(outputs, labels.to(device))
@@ -73,6 +77,8 @@ def main():
 
             running_loss += loss.item()
             train_bar.desc = "train epoch[{}/{}] loss :{:3f}".format(epoch+1, epochs, loss)
+
+        writer.add_scalar("loss_train", scalar_value=running_loss, global_step=epoch)
 
         net.eval()
         acc = 0.0
@@ -92,42 +98,13 @@ def main():
             best_acc = val_accurate
             torch.save(net.state_dict(), save_path)
 
+        writer.add_scalar("accurate_val", scalar_value=val_accurate, global_step=epoch)
+    writer.close()
     print("finish training.")
 
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

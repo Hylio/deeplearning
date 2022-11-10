@@ -52,7 +52,7 @@ def main():
 
     net = resnet34(num_classes=2)
     net.to(device)
-
+    a = 0
     loss_function = nn.CrossEntropyLoss()
 
     optimizer = optim.Adam(params=net.parameters(), lr=0.0001)
